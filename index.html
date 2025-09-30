@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alice Ai</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^0.14.0"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main>
+    <nav>
+      <button type="button" id="nav-model-btn" class="nav-btn is-active" data-page="model-page">Model Studio</button>
+      <button type="button" id="nav-placeholder-btn" class="nav-btn" data-page="placeholder-page">Placeholder Studio</button>
+    </nav>
+    <header>
+      <h1>Alice Ai</h1>
+      <p>Create stunning product showcases by describing a model, style, and scene. Upload an accessory image and let AI generate a professional photograph.</p>
+    </header>
+    <form id="prompt-form" aria-label="Image generation form">
+      <div id="pages-container">
+        <div id="model-page">
+          <div id="model-section">
+            <div class="input-group">
+              <label for="model-input">Model Description</label>
+              <input type="text" id="model-input" placeholder="e.g., a woman with long blonde hair">
+              <div id="model-presets-container" class="model-presets-container">
+                  <div class="preset-group">
+                      <label class="preset-group-label">Gender</label>
+                      <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="gender">Female Model</button>
+                          <button type="button" class="preset-btn-model" data-category="gender">Male Model</button>
+                      </div>
+                  </div>
+                   <div class="preset-group">
+                      <label class="preset-group-label">Age</label>
+                      <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="age">teenage</button>
+                          <button type="button" class="preset-btn-model" data-category="age">young adult</button>
+                          <button type="button" class="preset-btn-model" data-category="age">middle-aged</button>
+                          <button type="button" class="preset-btn-model" data-category="age">senior</button>
+                      </div>
+                  </div>
+                  <div class="preset-group">
+                      <label class="preset-group-label">Ethnicity</label>
+                      <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">East Asian</button>
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">South Asian</button>
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">Black</button>
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">Caucasian</button>
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">Hispanic</button>
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">Middle Eastern</button>
+                          <button type="button" class="preset-btn-model" data-category="ethnicity">Indigenous</button>
+                      </div>
+                  </div>
+                  <div class="preset-group">
+                      <label class="preset-group-label">Hair Color</label>
+                      <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="hair_color">blonde hair</button>
+                          <button type="button" class="preset-btn-model" data-category="hair_color">brown hair</button>
+                          <button type="button" class="preset-btn-model" data-category="hair_color">black hair</button>
+                          <button type="button" class="preset-btn-model" data-category="hair_color">red hair</button>
+                      </div>
+                  </div>
+                  <div class="preset-group">
+                      <label class="preset-group-label">Hair Style</label>
+                      <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="hair_style">long hair</button>
+                          <button type="button" class="preset-btn-model" data-category="hair_style">short hair</button>
+                          <button type="button" class="preset-btn-model" data-category="hair_style">curly hair</button>
+                          <button type="button" class="preset-btn-model" data-category="hair_style">straight hair</button>
+                      </div>
+                  </div>
+                   <div class="preset-group">
+                      <label class="preset-group-label">Appearance</label>
+                      <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="appearance" data-allow-multiple="true">with glasses</button>
+                          <button type="button" class="preset-btn-model" data-category="appearance" data-allow-multiple="true">with tattoos</button>
+                          <button type="button" class="preset-btn-model" data-category="appearance" data-allow-multiple="true">athletic</button>
+                      </div>
+                  </div>
+                   <div class="preset-group">
+                      <label class="preset-group-label">Model Style</label>
+                      <div id="female-model-styles">
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Elegant & Formal</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="elegant">Glamour</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="elegant">Evening Wear</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="elegant">Haute Couture</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="elegant">Romantic</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Professional</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="professional">Corporate Chic</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="professional">Business Professional</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Casual & Modern</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="casual">Effortless Chic</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="casual">Streetwear</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="casual">Sporty</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="casual">Beach Vibe</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Alternative & Edgy</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="alternative">Grunge</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="alternative">Punk</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="alternative">Gothic</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="alternative">Western</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Artistic & Aesthetic</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="artistic">Bohemian</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="artistic">Vintage</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="artistic">Ethereal</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="artistic">Cinematic</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="artistic">Minimalist</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="artistic">Dark Academia</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="male-model-styles" hidden>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Classic & Refined</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-classic">Dapper</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-classic">Smart Casual</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-classic">Preppy</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Professional</label>
+                           <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-professional">Business Professional</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Modern & Urban</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-modern">Streetwear</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-modern">Minimalist</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-modern">Techwear</button>
+                          </div>
+                        </div>
+                        <div class="style-subgroup">
+                          <label class="style-subgroup-label">Rugged & Alternative</label>
+                          <div class="style-presets">
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-alt">Rugged</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-alt">Punk</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-alt">Skater</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-alt">Western</button>
+                              <button type="button" class="preset-btn-model" data-category="style" data-allow-multiple="true" data-style-group="male-alt">Bohemian</button>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                  <div class="preset-group">
+                      <label class="preset-group-label">Pose & Gesture</label>
+                      <div id="female-poses">
+                        <div class="style-presets">
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Confident</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Happy</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Cheerful</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Elegant</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Thoughtful</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Powerful</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Playful</button>
+                            <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Serene</button>
+                        </div>
+                      </div>
+                      <div id="male-poses" hidden>
+                        <div class="style-presets">
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Confident</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Leaning Casually</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Hands in Pockets</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Adjusting Cufflinks</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Thoughtful Gaze</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Relaxed Smile</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Powerful Stance</button>
+                          <button type="button" class="preset-btn-model" data-category="pose" data-allow-multiple="true">Dynamic Motion</button>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="input-group" id="scene-section">
+                <label for="scene-input">Scene Description</label>
+                <input type="text" id="scene-input" placeholder="e.g., a bustling city street at night">
+                <div id="scene-presets" class="style-presets">
+                  <button type="button" class="preset-btn-model" data-scene-group="location">urban</button>
+                  <button type="button" class="preset-btn-model" data-scene-group="location">nature</button>
+                  <button type="button" class="preset-btn-model" data-scene-group="location">studio</button>
+                  <button type="button" class="preset-btn-model" data-scene-group="location">indoor</button>
+                  <button type="button" class="preset-btn-model" data-scene-group="location">outdoor</button>
+                  <button type="button" class="preset-btn-model" data-scene-group="time">night</button>
+                  <button type="button" class="preset-btn-model" data-scene-group="time">day</button>
+                </div>
+            </div>
+            <div class="input-group" id="lighting-section">
+                <label>Lighting Style</label>
+                <div class="radio-options-group">
+                    <div>
+                        <input type="radio" id="lighting-automatic" name="lighting" value="automatic" checked>
+                        <label for="lighting-automatic">Automatic</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="lighting-soft" name="lighting" value="soft">
+                        <label for="lighting-soft">Soft Natural</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="lighting-dramatic" name="lighting" value="dramatic">
+                        <label for="lighting-dramatic">Dramatic Studio</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="lighting-golden" name="lighting" value="golden">
+                        <label for="lighting-golden">Golden Hour</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="lighting-cinematic" name="lighting" value="cinematic">
+                        <label for="lighting-cinematic">Cinematic</label>
+                    </div>
+                     <div>
+                        <input type="radio" id="lighting-backlit" name="lighting" value="backlit">
+                        <label for="lighting-backlit">Backlit</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="lighting-rim" name="lighting" value="rim">
+                        <label for="lighting-rim">Rim Lighting</label>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group" id="accessory-proportion-section">
+                <label>Accessory Proportion</label>
+                <div class="radio-options-group">
+                    <div>
+                        <input type="radio" id="proportion-small" name="proportion" value="small">
+                        <label for="proportion-small">Delicate / Small</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="proportion-natural" name="proportion" value="natural" checked>
+                        <label for="proportion-natural">Natural Size</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="proportion-large" name="proportion" value="large">
+                        <label for="proportion-large">Prominent / Large</label>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div id="placeholder-page">
+           <div id="placeholder-section">
+            <div class="input-group">
+              <label for="placeholder-input">Photoshoot Setup</label>
+              <input type="text" id="placeholder-input" placeholder="e.g., on a marble slab with soft lighting">
+              <div id="placeholder-presets" class="style-presets">
+                <button type="button" class="preset-btn-model">Minimalist White Background</button>
+                <button type="button" class="preset-btn-model">On a Marble Slab</button>
+                <button type="button" class="preset-btn-model">Velvet Cushion Display</button>
+                <button type="button" class="preset-btn-model">Natural Wood Surface</button>
+                <button type="button" class="preset-btn-model">Floating with soft shadows</button>
+                <button type="button" class="preset-btn-model">Amongst Botanicals</button>
+                <button type="button" class="preset-btn-model" data-prompt="Nestled amongst a beautiful arrangement of iridescent mother of pearl shells, colorful natural stones, and delicate sea stars on a soft, sandy beach, with calm turquoise water in the background. The lighting is bright and natural.">Beach Setup</button>
+                <button type="button" class="preset-btn-model">Draped on silk fabric</button>
+                <button type="button" class="preset-btn-model">Reflecting on a dark water surface</button>
+                <button type="button" class="preset-btn-model">On a stack of vintage books</button>
+                <button type="button" class="preset-btn-model">With dramatic, hard-light shadows</button>
+                <button type="button" class="preset-btn-model">Nestled in a bed of flowers</button>
+                <button type="button" class="preset-btn-model">Elegant display with natural stones and pearls surrounding</button>
+                <button type="button" class="preset-btn-model">Surrounded by colorful natural stones</button>
+                <button type="button" class="preset-btn-model">Surrounded by golden leaves and pearls</button>
+                <button type="button" class="preset-btn-model">In a high-end, open gift box</button>
+                <button type="button" class="preset-btn-model">On a clean podium</button>
+                <button type="button" class="preset-btn-model">In a softly lit display case</button>
+                <button type="button" class="preset-btn-model">On a textured fabric</button>
+                <button type="button" class="preset-btn-model">With subtle spotlighting</button>
+                <button type="button" class="preset-btn-model">On a reflective surface</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="input-group" id="aspect-ratio-section">
+          <label>Aspect Ratio</label>
+          <div class="radio-options-group">
+              <div>
+                  <input type="radio" id="ratio-1-1" name="aspect-ratio" value="1:1" checked>
+                  <label for="ratio-1-1">1:1</label>
+              </div>
+              <div>
+                  <input type="radio" id="ratio-16-9" name="aspect-ratio" value="16:9">
+                  <label for="ratio-16-9">16:9</label>
+              </div>
+              <div>
+                  <input type="radio" id="ratio-9-16" name="aspect-ratio" value="9:16">
+                  <label for="ratio-9-16">9:16</label>
+              </div>
+          </div>
+      </div>
+       <div class="input-group">
+        <label for="accessory-type-input">Accessory Type</label>
+        <input type="text" id="accessory-type-input" placeholder="e.g., a statement necklace" required>
+        <div id="accessory-presets" class="style-presets">
+            <button type="button" class="preset-btn-model">Earrings</button>
+            <button type="button" class="preset-btn-model">Bracelet</button>
+            <button type="button" class="preset-btn-model">Necklace</button>
+            <button type="button" class="preset-btn-model">Rings</button>
+            <button type="button" class="preset-btn-model">Anklet</button>
+            <button type="button" class="preset-btn-model">Hat</button>
+            <button type="button" class="preset-btn-model">Scarf</button>
+            <button type="button" class="preset-btn-model">Watch</button>
+            <button type="button" class="preset-btn-model">Bag</button>
+            <button type="button" class="preset-btn-model">Glasses</button>
+            <button type="button" class="preset-btn-model">Jewelry</button>
+            <button type="button" class="preset-btn-model">Belt</button>
+            <button type="button" class="preset-btn-model">Shoes</button>
+            <button type="button" class="preset-btn-model">Socks</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="accessory-upload">Accessory Image</label>
+        <div class="file-drop-area">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span class="file-msg">Drag & drop or click to upload (up to 3)</span>
+            <input type="file" id="accessory-upload" accept="image/*" required multiple>
+        </div>
+        <button type="button" id="use-camera-btn" class="secondary-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          <span>Use Camera</span>
+        </button>
+        <div id="image-preview-container" class="preview-container" aria-live="polite"></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" id="generate-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+          <span class="btn-text">Generate Image</span>
+          <div class="spinner" hidden></div>
+        </button>
+        <button type="button" id="clear-form-btn" class="clear-form-btn">Reset</button>
+      </div>
+    </form>
+    <section id="result-container" aria-live="polite">
+      <!-- Generated image will be displayed here -->
+    </section>
+    <section id="gallery-section" aria-labelledby="gallery-heading">
+      <div class="gallery-header">
+        <h2 id="gallery-heading">My Gallery</h2>
+        <button type="button" id="clear-gallery-btn" class="clear-gallery-btn" hidden>Clear All</button>
+      </div>
+      <div id="gallery-container">
+        <!-- Saved images will be displayed here -->
+      </div>
+      <p id="empty-gallery-msg">No saved images yet.</p>
+    </section>
+  </main>
+  
+  <div id="camera-modal" class="camera-modal" hidden>
+      <div class="camera-modal-overlay"></div>
+      <div class="camera-modal-content">
+          <video id="camera-feed" playsinline autoplay></video>
+          <canvas id="camera-canvas" hidden></canvas>
+          <div class="camera-controls">
+              <button type="button" id="capture-btn" class="capture-btn" aria-label="Capture photo">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"></circle><circle cx="12" cy="12" r="7" fill="white"></circle></svg>
+              </button>
+              <button type="button" id="close-camera-btn" class="close-camera-btn" aria-label="Close camera">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+          </div>
+      </div>
+  </div>
+  
+  <script type="module" src="index.tsx"></script>
+</body>
+</html>

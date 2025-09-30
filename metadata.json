@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Alice Ai - 30/09/2025",
+  "description": "Generate professional product photos by combining an accessory image with a descriptive prompt.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
