@@ -23,7 +23,8 @@ class Step extends Model
     public function sections()
     {
         return $this->belongsToMany(Section::class, 'step_sections')
-            ->withPivot(['order', 'is_active', 'created_at', 'updated_at'])
+            ->withPivot(['order', 'is_active'])
+            ->wherePivot('is_active', 1)
             ->orderBy('step_sections.order');
     }
 }

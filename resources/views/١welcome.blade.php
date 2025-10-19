@@ -31,11 +31,6 @@
             transition: all .3s ease;
         }
 
-        .btn-primary[disabled] {
-            opacity: .7;
-            cursor: not-allowed;
-        }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 30px rgba(99, 102, 241, .5), 0 12px 60px rgba(236, 72, 153, .4);
@@ -80,6 +75,35 @@
             box-shadow: 0 0 20px rgba(99, 102, 241, .4);
         }
 
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, .1);
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(99, 102, 241, .6);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(99, 102, 241, .6);
+            border: none;
+        }
+
         .input-field {
             background: rgba(255, 255, 255, .05);
             border: 1px solid rgba(255, 255, 255, .1);
@@ -105,6 +129,11 @@
             50% {
                 transform: translateY(-10px)
             }
+        }
+
+        select option {
+            background: #1a1a24;
+            color: #fff;
         }
 
         .gradient-text {
@@ -170,7 +199,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-<!-- Animated bg -->
+<!-- Animated background -->
 <div class="fixed inset-0 overflow-hidden pointer-events-none">
     <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl floating"></div>
     <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl floating"
@@ -187,7 +216,7 @@
             <span class="text-sm font-semibold">Guided Creator</span>
         </div>
         <h1 class="text-5xl font-bold gradient-text mb-2">Create Your Perfect Image</h1>
-        <p class="text-gray-400">Follow the steps to build your masterpiece — powered by Admin</p>
+        <p class="text-gray-400">Follow the steps to build your masterpiece</p>
     </div>
 
     <!-- Step Progress -->
@@ -201,18 +230,21 @@
     <!-- Main Content Card -->
     <div class="glass rounded-3xl overflow-hidden">
         <div class="p-8">
-            <div id="stepContainer"></div>
+            <div id="stepContainer"><!-- Steps injected here --></div>
 
-            <!-- Generation result -->
-            <div id="resultContainer" class="hidden">
-                <div class="text-sm font-medium text-gray-300 mb-3">Result</div>
+            <!-- Preview -->
+            <div class="glass rounded-2xl p-4 mb-6">
+                <div class="text-sm font-medium text-gray-300 mb-3">Preview</div>
                 <div class="rounded-xl overflow-hidden border border-white/10">
-                    <img id="resultImage" class="w-full h-auto object-cover" alt="result"/>
+                    <div class="aspect-video w-full bg-gradient-to-br from-gray-900 to-gray-800">
+                        <img src="https://images.unsplash.com/photo-1612198182706-f09f36c5a3a3?q=80&w=1200&auto=format&fit=crop"
+                             alt="preview" class="w-full h-full object-cover"/>
+                    </div>
                 </div>
             </div>
 
             <!-- Navigation Buttons -->
-            <div class="flex items-center justify-between gap-4 mt-6">
+            <div class="flex items-center justify-between gap-4">
                 <button id="prevBtn" class="btn-secondary h-12 px-8 rounded-xl font-semibold">← Back</button>
                 <div class="text-sm text-gray-400" id="stepCounter">Step 1 of 1</div>
                 <button id="nextBtn" class="btn-primary h-12 px-8 rounded-xl text-white font-semibold">Next →</button>
@@ -226,34 +258,23 @@
 
 <script>
     // ===== Config =====
-    const studioCode = 'model';
-    let userGender = 'both';
+    const studioCode = 'model';        // from your DB (studios.code)
+    let userGender = 'both';           // 'male' | 'female' | 'both'
 
     // ===== State =====
-    let steps = [];
     let currentStepIndex = 0;
-    const selections = {}; // { sectionCode: { type, values/value/file } }
+    let steps = []; // from API
+    const selections = {}; // { sectionCode: { type, values/tokens/files... } }
 
-    // ===== API helpers =====
-
+    // ===== API =====
     async function fetchStudioTree(code, gender = 'both') {
         const res = await fetch(`/api/v1/studios/${code}?gender=${encodeURIComponent(gender)}`);
         if (!res.ok) throw new Error('Failed to load studio');
         const json = await res.json();
-        return json.data || json;
+        return json.data || json; // Support resource or plain JSON
     }
 
-    async function postGenerate(code, payload) {
-        const res = await fetch(`/api/v1/studios/${code}/generate`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error('Generation failed');
-        return res.json();
-    }
-
-    // ===== UI helpers =====
+    // ===== Rendering utilities =====
     function setTip(text) {
         document.getElementById('tipContainer').innerHTML = `
         <div class="flex items-start gap-3">
@@ -266,17 +287,17 @@
     }
 
     function renderIndicators() {
-        const stepNames = steps.map(s => s.title || s.name || 'Step');
+        const stepNames = steps.map(s => s.title);
         const current = currentStepIndex + 1;
         const total = steps.length;
 
         const indicatorsHTML = stepNames.map((_, i) => {
             const num = i + 1;
             let cls = 'step-indicator w-12 h-12 rounded-full flex items-center justify-center font-bold border-2';
-            const label = (num < current) ? '✓' : num;
-            if (num < current) cls += ' step-complete';
-            else if (num === current) cls += ' step-active';
-            else cls += ' glass border';
+            if (num < current) cls += ' step-complete', label = '✓';
+            else if (num === current) cls += ' step-active', label = num;
+            else cls += ' glass border', label = num;
+            var label = (num < current) ? '✓' : num;
             return `<div class="${cls}">${label}</div>`;
         }).join('');
         document.getElementById('stepIndicators').innerHTML = indicatorsHTML;
@@ -300,8 +321,8 @@
     }
 
     function renderSection(sec) {
-        const secAttr = `data-section="${sec.code}" data-type="${sec.input_type}" data-mode="${sec.selection_mode}" data-max="${sec.max_select || 1}" data-min="${sec.min_select || 0}" data-group="${sec.group?.code || ''}" ${sec.group?.exclusive_sections ? 'data-exclusive="1"' : ''}`;
-        const title = `<div class="text-sm font-medium text-gray-300 mb-2">${(sec.name || '').trim()}${sec.is_required ? ' <span class="text-pink-400">*</span>' : ''}</div>`;
+        const secAttr = `data-section="${sec.code}" data-mode="${sec.selection_mode}" data-max="${sec.max_select || 1}" data-min="${sec.min_select || 0}" data-group="${sec.group?.code || ''}" ${sec.group?.exclusive_sections ? 'data-exclusive="1"' : ''}`;
+        const title = `<div class="text-sm font-medium text-gray-300 mb-2">${sec.name}${sec.is_required ? ' <span class="text-pink-400">*</span>' : ''}</div>`;
 
         if (sec.input_type === 'chips') {
             const gridCols = (sec.max_select && sec.max_select > 4) ? 'grid-cols-4' : 'grid-cols-3';
@@ -339,14 +360,12 @@
     function renderCurrentStep() {
         const step = steps[currentStepIndex];
         const sectionsHTML = (step.sections || []).map(renderSection).join('');
-        const title = step.title || step.name || `Step ${currentStepIndex + 1}`;
-
         document.getElementById('stepContainer').innerHTML = `
         <div class="mb-8 step-content active">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">${currentStepIndex + 1}</div>
             <div>
-              <h2 class="text-2xl font-bold gradient-text">${title}</h2>
+              <h2 class="text-2xl font-bold gradient-text">${step.title}</h2>
               ${step.subtitle ? `<p class="text-gray-400 text-sm">${step.subtitle}</p>` : ''}
             </div>
           </div>
@@ -354,14 +373,16 @@
         </div>`;
 
         bindInteractionsForStep();
-        setTip('Pick options — everything you see comes from the Admin.');
+        setTip('Use the options to configure your scene. All data is coming from Admin.');
     }
 
-    // ===== Selection logic =====
+    // ===== Selection logic (exclusivity & min/max) =====
     function enforceExclusivity(container, clickedBtn) {
         const groupCode = container.dataset.group;
         const isExclusive = container.dataset.exclusive === '1';
         if (!groupCode || !isExclusive) return;
+
+        // Deactivate all chips in same exclusive group (across sections in the step)
         const root = document.getElementById('stepContainer');
         root.querySelectorAll(`[data-group="${groupCode}"] .chip-active`).forEach(el => {
             if (el !== clickedBtn) {
@@ -372,6 +393,7 @@
     }
 
     function bindInteractionsForStep() {
+        // chips
         document.querySelectorAll('#stepContainer [data-section] .chip, #stepContainer [data-section] .chip-active')
             .forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -401,122 +423,119 @@
                     }
                     enforceExclusivity(container, e.currentTarget);
                     saveSectionState(container);
+                    updateSummaryPreview();
                 });
             });
 
+        // text / textarea
         document.querySelectorAll('#stepContainer [data-section] input[type="text"], #stepContainer [data-section] textarea')
             .forEach(input => {
                 input.addEventListener('input', (e) => {
-                    saveSectionState(e.currentTarget.closest('[data-section]'));
+                    const container = e.currentTarget.closest('[data-section]');
+                    saveSectionState(container);
+                    updateSummaryPreview();
                 });
             });
 
+        // file
         document.querySelectorAll('#stepContainer [data-section] input[type="file"]')
             .forEach(input => {
                 input.addEventListener('change', (e) => {
-                    saveSectionState(e.currentTarget.closest('[data-section]'));
+                    const container = e.currentTarget.closest('[data-section]');
+                    saveSectionState(container);
+                    updateSummaryPreview();
                 });
             });
     }
 
     function saveSectionState(container) {
         const sectionCode = container.dataset.section;
-        const type = container.dataset.type;
+        const mode = container.dataset.mode;
 
-        if (type === 'chips') {
-            selections[sectionCode] = {
-                type: 'chips',
-                values: Array.from(container.querySelectorAll('.chip-active')).map(b => b.getAttribute('data-choice')),
-            };
+        if (!selections[sectionCode]) selections[sectionCode] = {type: container.getAttribute('data-type') || 'chips'};
+
+        // chips
+        const activeChips = Array.from(container.querySelectorAll('.chip-active')).map(b => b.getAttribute('data-choice'));
+        if (activeChips.length) {
+            selections[sectionCode] = {type: 'chips', values: activeChips};
             return;
         }
-        if (type === 'text') {
-            selections[sectionCode] = {type: 'text', value: container.querySelector('input[type="text"]').value || ''};
+        // text
+        const textInput = container.querySelector('input[type="text"]');
+        if (textInput) {
+            selections[sectionCode] = {type: 'text', value: textInput.value || ''};
             return;
         }
-        if (type === 'textarea') {
-            selections[sectionCode] = {type: 'textarea', value: container.querySelector('textarea').value || ''};
+        // textarea
+        const textarea = container.querySelector('textarea');
+        if (textarea) {
+            selections[sectionCode] = {type: 'textarea', value: textarea.value || ''};
             return;
         }
-        if (type === 'upload') {
-            const f = container.querySelector('input[type="file"]').files?.[0] || null;
-            selections[sectionCode] = {type: 'upload', file: f ? '[binary]' : null}; // placeholder
+        // file
+        const fileInput = container.querySelector('input[type="file"]');
+        if (fileInput) {
+            selections[sectionCode] = {type: 'upload', file: (fileInput.files && fileInput.files[0]) || null};
             return;
         }
+
+        // fallback
+        selections[sectionCode] = {type: 'unknown'};
     }
 
-    // ===== Navigation & Generate =====
-    function go(stepIndexDelta) {
-        const next = currentStepIndex + stepIndexDelta;
-        if (next < 0 || next >= steps.length) return;
-        currentStepIndex = next;
-        renderIndicators();
-        renderCurrentStep();
-        syncButtons();
+    function updateSummaryPreview() {
+        // You can build a human-readable summary here or assemble prompt tokens
+        // Example (console): console.log('Current selections', JSON.parse(JSON.stringify(selections)));
     }
 
-    function syncButtons() {
+    // ===== Navigation =====
+    function syncNavButtons() {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
 
         prevBtn.disabled = currentStepIndex === 0;
         prevBtn.style.opacity = currentStepIndex === 0 ? '0.5' : '1';
         nextBtn.innerHTML = (currentStepIndex === steps.length - 1) ? '✨ Generate Image' : 'Next →';
+
+        prevBtn.onclick = () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderIndicators();
+                renderCurrentStep();
+            }
+        };
+
+        nextBtn.onclick = () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                renderIndicators();
+                renderCurrentStep();
+            } else {
+                // Final generate action (assemble prompt/tokens & call your image API)
+                alert('🎉 Generating your image with admin-driven settings...');
+                // TODO: assemblePromptFromSelections(selections)
+            }
+        };
     }
-
-    async function onGenerate(nextBtn) {
-        try {
-            nextBtn.disabled = true;
-            const original = nextBtn.textContent;
-            nextBtn.textContent = 'Generating…';
-
-            // Hide previous result (if any)
-            document.getElementById('resultContainer').classList.add('hidden');
-
-            const payload = {
-                gender: userGender,
-                selections: selections
-            };
-
-            const resp = await postGenerate(studioCode, payload);
-
-            // Show result image from backend
-            const imgEl = document.getElementById('resultImage');
-            imgEl.src = resp.image_url;
-            imgEl.alt = 'Generated image';
-            document.getElementById('resultContainer').classList.remove('hidden');
-
-            nextBtn.textContent = original; // keep the label as "✨ Generate Image"
-        } catch (e) {
-            console.error(e);
-            alert('Generation failed. Please try again.');
-        } finally {
-            document.getElementById('nextBtn').disabled = false;
-        }
-    }
-
-    // Attach listeners ONCE
-    document.getElementById('prevBtn').addEventListener('click', () => go(-1));
-    document.getElementById('nextBtn').addEventListener('click', async (e) => {
-        if (currentStepIndex < steps.length - 1) return go(+1);
-        await onGenerate(e.currentTarget);
-    });
 
     // ===== Boot =====
     (async function init() {
         try {
             const studio = await fetchStudioTree(studioCode, userGender);
-            steps = (studio.steps || []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            steps = (studio.steps || []).sort((a, b) => a.order - b.order);
+
+            // Basic fallback if empty
             if (!steps.length) {
                 document.getElementById('stepContainer').innerHTML = '<div class="text-gray-400">No steps configured.</div>';
                 return;
             }
+
             renderIndicators();
             renderCurrentStep();
-            syncButtons();
+            syncNavButtons();
         } catch (e) {
             console.error(e);
-            document.getElementById('stepContainer').innerHTML = '<div class="text-red-400">Failed to load from Admin. Check the API.</div>';
+            document.getElementById('stepContainer').innerHTML = '<div class="text-red-400">Failed to load from Admin. Check API.</div>';
         }
     })();
 </script>

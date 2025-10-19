@@ -10,6 +10,11 @@ class StepSection extends Model
         'studio_id', 'step_id', 'section_id', 'order', 'is_active'
     ];
 
+    public function studio()
+    {
+        return $this->belongsTo(Studio::class);
+    }
+
     public function step()
     {
         return $this->belongsTo(Step::class);
