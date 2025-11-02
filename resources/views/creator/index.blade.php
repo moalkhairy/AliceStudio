@@ -1,5 +1,4 @@
-{{-- resources/views/creator/index.blade.php --}}
-        <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -11,7 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         * {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif
         }
 
         body {
@@ -148,15 +147,6 @@
         <p class="text-gray-400">Follow the steps to build your masterpiece</p>
     </div>
 
-    {{-- Gender --}}
-    <div class="glass rounded-2xl p-4 mb-6 flex items-center justify-between">
-        <div class="text-sm text-gray-300 font-medium">Select Gender</div>
-        <div class="flex gap-2">
-            <button class="px-4 py-2 rounded-full chip" data-gender-btn="male">Male</button>
-            <button class="px-4 py-2 rounded-full chip" data-gender-btn="female">Female</button>
-        </div>
-    </div>
-
     {{-- Progress --}}
     <div class="glass rounded-2xl p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
@@ -196,11 +186,10 @@
 
     let gender = null;
     let currentStep = 0;
-    const totalSteps = WIZARD.steps.length;
-    const selections = {}; // { [sectionKey]: value|string[]|boolean }
-    let step1LockedForUploads = true; // uploads must be done before selecting any first-step section
+    const totalSteps = Array.isArray(WIZARD?.steps) && WIZARD.steps.length ? WIZARD.steps.length : 1;
+    const selections = {};
+    let step1LockedForUploads = true;
 
-    // Shortcuts
     const $ = (sel, root = document) => root.querySelector(sel);
     const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
     const stepContainer = $('#stepContainer');
@@ -214,29 +203,8 @@
     const tipContainer = $('#tipContainer');
     const alerts = $('#alerts');
 
-    // Gender buttons
-    $$('[data-gender-btn]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            gender = btn.getAttribute('data-gender-btn');
-            $$('[data-gender-btn]').forEach(b => b.classList.remove('chip-active'));
-            btn.classList.add('chip-active');
-            render();
-        });
-    });
-
-    function visibleGroups(step) {
-        const g = gender;
-        return (step.groups || []).map(gr => {
-            const filtered = (gr.sections || []).filter(sec => {
-                const sGender = sec.gender || 'both';
-                return !g || sGender === 'both' || sGender === g;
-            });
-            return {...gr, sections: filtered};
-        }).filter(gr => gr.sections.length);
-    }
-
     function renderIndicators() {
-        stepIndicators.innerHTML = WIZARD.steps.map((s, i) => {
+        stepIndicators.innerHTML = Array.from({length: totalSteps}).map((_, i) => {
             const done = i < currentStep;
             const active = i === currentStep;
             const base = 'step-indicator w-12 h-12 rounded-full flex items-center justify-center font-bold border-2';
@@ -244,155 +212,168 @@
             const label = done ? '✓' : (i + 1);
             return `<div class="${cls}">${label}</div>`;
         }).join('');
-        stepLabels.innerHTML = WIZARD.steps.map((s, i) => `<span class="${i === currentStep ? 'text-indigo-400 font-semibold' : ''}">${s.title}</span>`).join('');
+        stepLabels.innerHTML = (WIZARD?.steps || []).length
+            ? WIZARD.steps.map((s, i) => `<span class="${i === currentStep ? 'text-indigo-400 font-semibold' : ''}">${s.title}</span>`).join('')
+            : `<span class="text-indigo-400 font-semibold">Step 1</span>`;
         stepCounter.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
     }
 
     function inputRow(label, inner) {
-        return `<div class="mb-4">
-        ${label ? `<label class="text-sm font-medium text-gray-300 mb-2 block">${label}</label>` : ''}
-        ${inner}
-      </div>`;
+        return `<div class="mb-4">${label ? `<label class="text-sm font-medium text-gray-300 mb-2 block">${label}</label>` : ''}${inner}</div>`;
+    }
+
+    // Pinned (always first at Step 1)
+    function pinnedUploads() {
+        return `
+          <div class="mb-6">
+            <label class="text-sm font-medium text-gray-300 mb-3 block">Upload Reference Images (up to 3)</label>
+            <input id="imagesInput" type="file" accept="image/*" multiple class="w-full rounded-xl input-field p-3 text-sm"/>
+            <div class="text-xs text-gray-400 mt-2">Add up to 3 images <b>before</b> selecting any option in this step.</div>
+            <div id="imagesPreview" class="mt-3 grid grid-cols-3 gap-3"></div>
+          </div>
+        `;
+    }
+
+    function pinnedGender() {
+        const maleActive = gender === 'male' ? 'chip-active' : '';
+        const femaleActive = gender === 'female' ? 'chip-active' : '';
+        return `
+          <div class="mb-6">
+            <div class="text-sm font-medium text-gray-300 mb-2">Select Gender</div>
+            <div class="flex gap-2">
+              <button type="button" class="px-4 py-2 rounded-full chip ${maleActive}" data-gender-btn="male">Male</button>
+              <button type="button" class="px-4 py-2 rounded-full chip ${femaleActive}" data-gender-btn="female">Female</button>
+            </div>
+          </div>
+        `;
+    }
+
+    // Decide which groups to show for current step
+    function groupsForCurrentStep() {
+        const stepFromAdmin = (WIZARD?.steps || [])[currentStep] || null;
+        if (!stepFromAdmin) return [];
+
+        const allowed = gender ? [gender.toLowerCase(), 'both'] : ['both'];
+        const isGenderSection = (sec) => (sec.key || '').toLowerCase() === 'gender';
+
+        const groups = (stepFromAdmin.groups || []).map(gr => {
+            const filteredSections = (gr.sections || []).filter(sec => {
+                const scope = (sec.gender || 'both').toLowerCase();
+                return allowed.includes(scope) && !isGenderSection(sec);
+            });
+            return {...gr, sections: filteredSections};
+        }).filter(gr => gr.sections.length > 0);
+
+        return groups;
     }
 
     function sectionHTML(sec, groupExclusive) {
         const key = sec.key;
-        const val = selections[key];
+        const val = selections[key] ?? (sec.selection === 'multiple' ? [] : null);
 
-        // Disabled state if group is exclusive and another section already chosen
-        let disableSection = false;
+        let disable = false;
         if (groupExclusive) {
             const chosen = exclusiveChosenKeyInGroup(sec);
-            if (chosen && chosen !== key) disableSection = true;
+            if (chosen && chosen !== key) disable = true;
         }
-
-        const disabled = disableSection ? 'disabled' : '';
-        const disabledCls = disableSection ? 'opacity-50 pointer-events-none' : '';
+        const disAttr = disable ? 'disabled' : '';
+        const disCls = disable ? 'opacity-50 pointer-events-none' : '';
 
         if (sec.type === 'textarea') {
-            return `<div class="${disabledCls}">
-          ${inputRow(sec.label,
-                `<textarea data-sec="${key}" class="w-full rounded-xl input-field p-4 text-base resize-none" rows="4" ${disabled}>${val ?? ''}</textarea>`
-            )}
-        </div>`;
+            return `<div class="${disCls}">${inputRow(sec.label, `<textarea data-sec="${key}" class="w-full rounded-xl input-field p-4 text-base resize-none" rows="4" ${disAttr}>${val ?? ''}</textarea>`)}</div>`;
         }
-
         if (sec.type === 'text') {
-            return `<div class="${disabledCls}">
-          ${inputRow(sec.label,
-                `<input data-sec="${key}" class="w-full rounded-xl input-field p-3 text-sm" value="${val ?? ''}" ${disabled}/>`
-            )}
-        </div>`;
+            return `<div class="${disCls}">${inputRow(sec.label, `<input data-sec="${key}" class="w-full rounded-xl input-field p-3 text-sm" value="${val ?? ''}" ${disAttr}/>`)}</div>`;
         }
-
         if (sec.type === 'select') {
             const opts = (sec.options || []).map(o => {
                 const selected = (val ?? sec.options?.[0]?.key) === o.key ? 'selected' : '';
                 return `<option value="${o.key}" ${selected}>${o.label}</option>`;
             }).join('');
-            return `<div class="${disabledCls}">
-          ${inputRow(sec.label,
-                `<select data-sec="${key}" class="w-full rounded-xl input-field p-3 text-sm" ${disabled}>${opts}</select>`
-            )}
-        </div>`;
+            return `<div class="${disCls}">${inputRow(sec.label, `<select data-sec="${key}" class="w-full rounded-xl input-field p-3 text-sm" ${disAttr}>${opts}</select>`)}</div>`;
         }
-
         if (sec.type === 'chips') {
             const mode = sec.selection || 'single';
             const cur = val ?? (mode === 'multiple' ? [] : null);
             const chips = (sec.options || []).map(o => {
                 const active = mode === 'multiple' ? (cur || []).includes(o.key) : cur === o.key;
-                return `<button type="button" class="px-4 py-2 rounded-full chip ${active ? 'chip-active' : ''} text-sm"
-                    data-chip data-sec="${key}" data-mode="${mode}" data-val="${o.key}" ${disabled}>
-                    ${o.icon ? o.icon + ' ' : ''}${o.label}</button>`;
+                const icon = o.icon ? `<img src="${o.icon}" alt="" class="inline-block w-4 h-4 mr-1 rounded-sm object-cover">` : '';
+                return `<button type="button" class="px-4 py-2 rounded-full chip ${active ? 'chip-active' : ''} text-sm" data-chip data-sec="${key}" data-mode="${mode}" data-val="${o.key}" ${disAttr}>${icon}${o.label}</button>`;
             }).join('');
-            return `<div class="${disabledCls}">
-          ${inputRow(sec.label, `<div class="flex flex-wrap gap-2">${chips}</div>`)}
-        </div>`;
+            return `<div class="${disCls}">${inputRow(sec.label, `<div class="flex flex-wrap gap-2">${chips}</div>`)}</div>`;
         }
-
         if (sec.type === 'checkbox' || sec.type === 'boolean') {
             const checked = val ? 'checked' : '';
-            return `<label class="rounded-xl glass p-3 flex items-center justify-between cursor-pointer hover:bg-white/10 ${disabledCls}">
-          <span class="text-sm">${sec.label}</span>
-          <input type="checkbox" data-sec="${key}" ${checked} ${disabled}/>
-        </label>`;
+            return `<label class="rounded-xl glass p-3 flex items-center justify-between cursor-pointer hover:bg-white/10 ${disCls}">
+                <span class="text-sm">${sec.label}</span>
+                <input type="checkbox" data-sec="${key}" ${checked} ${disAttr}/>
+            </label>`;
         }
-
         return '';
     }
 
     function exclusiveChosenKeyInGroup(sampleSection) {
-        // find group of sampleSection in current step
-        const step = WIZARD.steps[currentStep];
+        const step = (WIZARD?.steps || [])[currentStep];
+        if (!step) return null;
         for (const g of (step.groups || [])) {
             if (!g.exclusive) continue;
             const keys = (g.sections || []).map(s => s.key);
             if (!keys.includes(sampleSection.key)) continue;
-
-            // among those keys, if any has a "chosen" value
             for (const k of keys) {
                 const v = selections[k];
-                if (v === undefined || v === null || (Array.isArray(v) && v.length === 0) || v === '') continue;
-                // treat boolean false as "not chosen"
-                if (typeof v === 'boolean' && v === false) continue;
-                return k;
+                const chosen = !(v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'boolean' && v === false));
+                if (chosen) return k;
             }
         }
         return null;
     }
 
-    function renderUploadsIfFirstStep() {
-        if (currentStep !== 0) return '';
-        return `
-        <div class="mb-6">
-          <label class="text-sm font-medium text-gray-300 mb-3 block">Upload Reference Images (up to 3)</label>
-          <input id="imagesInput" type="file" accept="image/*" multiple class="w-full rounded-xl input-field p-3 text-sm"/>
-          <div class="text-xs text-gray-400 mt-2">Add up to 3 images <b>before</b> selecting any option in this step.</div>
-          <div id="imagesPreview" class="mt-3 grid grid-cols-3 gap-3"></div>
-        </div>
-      `;
-    }
-
     function renderStep() {
-        const step = WIZARD.steps[currentStep];
-        const groups = visibleGroups(step);
+        const stepFromAdmin = (WIZARD?.steps || [])[currentStep] || null;
+        const groups = groupsForCurrentStep();
 
+        const header = `
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">${currentStep + 1}</div>
+              <div>
+                <h2 class="text-2xl font-bold gradient-text">${stepFromAdmin?.title || 'Step ' + (currentStep + 1)}</h2>
+                <p class="text-gray-400 text-sm">${stepFromAdmin?.subtitle || ''}</p>
+              </div>
+            </div>`;
+
+        // HARD pin first: uploads + gender
         stepContainer.innerHTML = `
-        <div class="mb-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">${currentStep + 1}</div>
-            <div>
-              <h2 class="text-2xl font-bold gradient-text">${step.title}</h2>
-              <p class="text-gray-400 text-sm">${step.subtitle || ''}</p>
-            </div>
+          <div class="mb-8">
+            ${header}
+            ${currentStep === 0 ? pinnedUploads() : ''}
+            ${currentStep === 0 ? pinnedGender() : ''}
+
+            ${groups.length ? groups.map(g => `
+              <div class="space-y-4 mb-6" data-group data-exclusive="${g.exclusive ? '1' : '0'}">
+                ${(g.sections || []).map(sec => `
+                  <div class="group-section" data-section="${sec.key}">
+                    ${sectionHTML(sec, g.exclusive)}
+                  </div>`).join('')}
+              </div>`).join('') :
+            `<div class="text-sm text-gray-400">${gender ? 'No sections available for this gender.' : 'Pick a gender to see gender-specific options.'}</div>`
+        }
           </div>
-
-          ${renderUploadsIfFirstStep()}
-
-          ${groups.map(g => `
-            <div class="space-y-4 mb-6" data-group data-exclusive="${g.exclusive ? '1' : '0'}">
-              ${(g.sections || []).map(sec => `
-                <div class="group-section" data-section="${sec.key}">
-                  ${sectionHTML(sec, g.exclusive)}
-                </div>
-              `).join('')}
-            </div>
-          `).join('')}
-        </div>
-      `;
+        `;
 
         bindInputsAndChips();
-        if (currentStep === 0) bindUploads();
+        if (currentStep === 0) {
+            bindUploads();
+            bindGender();
+        }
+
         tipContainer.innerHTML = `
-        <div class="flex items-start gap-3">
-          <div class="text-2xl">💡</div>
-          <div>
-            <div class="font-semibold text-sm mb-1">Pro Tip</div>
-            <div class="text-sm text-gray-400">${step.tip || ''}</div>
-          </div>
-        </div>
-      `;
+          <div class="flex items-start gap-3">
+            <div class="text-2xl">💡</div>
+            <div>
+              <div class="font-semibold text-sm mb-1">Pro Tip</div>
+              <div class="text-sm text-gray-400">${stepFromAdmin?.tip || 'Add images then pick gender to reveal tailored options.'}</div>
+            </div>
+          </div>`;
     }
 
     function bindUploads() {
@@ -419,15 +400,23 @@
                 };
                 r.readAsDataURL(f);
             });
-            // Once files set, allow selections in step 1
             step1LockedForUploads = false;
         });
     }
 
+    function bindGender() {
+        $$('[data-gender-btn]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                gender = btn.getAttribute('data-gender-btn');
+                $$('[data-gender-btn]').forEach(b => b.classList.remove('chip-active'));
+                btn.classList.add('chip-active');
+                render(); // re-filter sections
+            });
+        });
+    }
+
     function bindInputsAndChips() {
-        // Hard lock on step 1 until uploads set (if user wants to upload)
         if (currentStep === 0 && step1LockedForUploads) {
-            // any click on controls warns if they try to select first
             stepContainer.addEventListener('click', (e) => {
                 const target = e.target.closest('[data-sec],[data-chip]');
                 if (target) {
@@ -439,25 +428,17 @@
                 }
             }, {once: true});
         }
-
-        // Inputs (text/textarea/select/checkbox)
         $$('[data-sec]').forEach(el => {
             const key = el.getAttribute('data-sec');
             const handler = () => {
                 const type = el.getAttribute('type');
-                let v;
-                if (type === 'checkbox') v = el.checked;
-                else v = el.value;
-
+                const v = (type === 'checkbox') ? el.checked : el.value;
                 selections[key] = v;
-                // handle exclusivity: if this section got a value, disable siblings
                 enforceExclusivity(key);
             };
             el.addEventListener('input', handler);
             el.addEventListener('change', handler);
         });
-
-        // Chips
         $$('[data-chip]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const key = btn.getAttribute('data-sec');
@@ -466,7 +447,6 @@
 
                 if (mode === 'single') {
                     selections[key] = btn.getAttribute('data-val');
-                    // toggle UI
                     $$(`[data-chip][data-sec="${key}"]`).forEach(b => b.classList.remove('chip-active'));
                     btn.classList.add('chip-active');
                 } else {
@@ -477,42 +457,35 @@
                     selections[key] = curr;
                     btn.classList.toggle('chip-active');
                 }
-
                 enforceExclusivity(key);
             });
         });
     }
 
     function enforceExclusivity(changedKey) {
-        // Find the group that contains changedKey and is exclusive
-        const step = WIZARD.steps[currentStep];
+        const step = (WIZARD?.steps || [])[currentStep];
+        if (!step) return;
         for (const g of (step.groups || [])) {
             if (!g.exclusive) continue;
             const keys = (g.sections || []).map(s => s.key);
             if (!keys.includes(changedKey)) continue;
 
-            // Determine chosen key (non-empty value)
             let chosen = null;
             for (const k of keys) {
                 const v = selections[k];
-                const chosenNow = !(v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'boolean' && v === false));
-                if (chosenNow) {
+                const picked = !(v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'boolean' && v === false));
+                if (picked) {
                     chosen = k;
                     break;
                 }
             }
 
-            // Disable other sections if chosen
             keys.forEach(k => {
                 if (k === chosen) return;
-                // disable UI for other sections
                 const el = stepContainer.querySelector(`[data-section="${k}"]`);
                 if (!el) return;
-                if (chosen) {
-                    el.classList.add('opacity-50', 'pointer-events-none');
-                } else {
-                    el.classList.remove('opacity-50', 'pointer-events-none');
-                }
+                if (chosen) el.classList.add('opacity-50', 'pointer-events-none');
+                else el.classList.remove('opacity-50', 'pointer-events-none');
             });
         }
     }
@@ -537,14 +510,11 @@
             show('Please select gender first.', 'error');
             return;
         }
-
         if (currentStep < totalSteps - 1) {
             currentStep++;
             render();
             return;
         }
-
-        // Generate on last step
         await generate();
     });
 
@@ -580,7 +550,7 @@
             } else {
                 show('Generation failed: invalid response.', 'error');
             }
-        } catch (e) {
+        } catch {
             show('Network error. Please try again.', 'error');
         } finally {
             disableNav(false);
@@ -590,8 +560,7 @@
     function disableNav(state, text) {
         prevBtn.disabled = state || currentStep === 0;
         nextBtn.disabled = state;
-        if (state && text) nextBtn.textContent = text;
-        else nextBtn.textContent = currentStep === totalSteps - 1 ? '✨ Generate Image' : 'Next →';
+        nextBtn.textContent = state && text ? text : (currentStep === totalSteps - 1 ? '✨ Generate Image' : 'Next →');
     }
 
     function show(msg, type = 'info') {
@@ -599,7 +568,6 @@
         setTimeout(() => alerts.innerHTML = '', 3500);
     }
 
-    // init
     render();
 </script>
 </body>

@@ -1,9 +1,11 @@
-<!doctype html>
+{{-- resources/views/creator/index.blade.php --}}
+        <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>Alice Studio — Step-by-Step Creator</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -14,13 +16,13 @@
 
         body {
             background: #0a0a0f;
-            color: #fff;
+            color: #fff
         }
 
         .glass {
             background: rgba(255, 255, 255, .03);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .08)
         }
 
         .btn-primary {
@@ -28,28 +30,23 @@
             background-size: 200% 200%;
             animation: gradientShift 3s ease infinite;
             box-shadow: 0 4px 20px rgba(99, 102, 241, .4), 0 8px 40px rgba(236, 72, 153, .3);
-            transition: all .3s ease;
-        }
-
-        .btn-primary[disabled] {
-            opacity: .7;
-            cursor: not-allowed;
+            transition: .3s
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(99, 102, 241, .5), 0 12px 60px rgba(236, 72, 153, .4);
+            box-shadow: 0 6px 30px rgba(99, 102, 241, .5), 0 12px 60px rgba(236, 72, 153, .4)
         }
 
         .btn-secondary {
             background: rgba(255, 255, 255, .05);
             border: 1px solid rgba(255, 255, 255, .1);
-            transition: all .3s ease;
+            transition: .3s
         }
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, .1);
-            border-color: rgba(99, 102, 241, .3);
+            border-color: rgba(99, 102, 241, .3)
         }
 
         @keyframes gradientShift {
@@ -64,58 +61,45 @@
         .chip {
             background: rgba(255, 255, 255, .05);
             border: 1px solid rgba(255, 255, 255, .1);
-            transition: all .3s ease;
-            cursor: pointer;
+            transition: .2s;
+            cursor: pointer
         }
 
         .chip:hover {
             background: rgba(99, 102, 241, .2);
             border-color: rgba(99, 102, 241, .4);
-            transform: translateY(-2px);
+            transform: translateY(-2px)
         }
 
         .chip-active {
             background: linear-gradient(135deg, rgba(99, 102, 241, .3), rgba(139, 92, 246, .3));
             border: 1px solid #6366f1;
-            box-shadow: 0 0 20px rgba(99, 102, 241, .4);
+            box-shadow: 0 0 20px rgba(99, 102, 241, .4)
         }
 
         .input-field {
             background: rgba(255, 255, 255, .05);
             border: 1px solid rgba(255, 255, 255, .1);
             color: #fff;
-            transition: all .3s ease;
+            transition: .3s
         }
 
         .input-field:focus {
             background: rgba(255, 255, 255, .08);
             border-color: #6366f1;
             outline: none;
-            box-shadow: 0 0 20px rgba(99, 102, 241, .3);
-        }
-
-        .floating {
-            animation: floating 3s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0%, 100% {
-                transform: translateY(0)
-            }
-            50% {
-                transform: translateY(-10px)
-            }
+            box-shadow: 0 0 20px rgba(99, 102, 241, .3)
         }
 
         .gradient-text {
             background: linear-gradient(135deg, #6366f1, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
+            background-clip: text
         }
 
         .step-indicator {
-            position: relative;
+            position: relative
         }
 
         .step-indicator::after {
@@ -125,72 +109,46 @@
             left: 100%;
             width: 100%;
             height: 2px;
-            background: rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .1)
         }
 
         .step-indicator:last-child::after {
-            display: none;
+            display: none
         }
 
         .step-complete {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             border-color: #6366f1;
-            box-shadow: 0 0 20px rgba(99, 102, 241, .5);
-        }
-
-        .step-complete::after {
-            background: linear-gradient(90deg, #6366f1, rgba(99, 102, 241, .3));
+            box-shadow: 0 0 20px rgba(99, 102, 241, .5)
         }
 
         .step-active {
             background: linear-gradient(135deg, rgba(99, 102, 241, .3), rgba(139, 92, 246, .3));
             border: 2px solid #6366f1;
-            box-shadow: 0 0 30px rgba(99, 102, 241, .6);
-        }
-
-        .step-content {
-            display: none;
-        }
-
-        .step-content.active {
-            display: block;
-            animation: fadeIn .3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px)
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0)
-            }
+            box-shadow: 0 0 30px rgba(99, 102, 241, .6)
         }
     </style>
 </head>
 <body class="min-h-screen">
-<!-- Animated bg -->
 <div class="fixed inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl floating"></div>
-    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl floating"
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"
          style="animation-delay:1s;"></div>
-    <div class="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl floating"
+    <div class="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
          style="animation-delay:2s;"></div>
 </div>
 
 <main class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <!-- Header -->
     <div class="text-center mb-8">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-3">
             <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
             <span class="text-sm font-semibold">Guided Creator</span>
         </div>
         <h1 class="text-5xl font-bold gradient-text mb-2">Create Your Perfect Image</h1>
-        <p class="text-gray-400">Follow the steps to build your masterpiece — powered by Admin</p>
+        <p class="text-gray-400">Follow the steps to build your masterpiece</p>
     </div>
 
-    <!-- Step Progress -->
+    {{-- Progress --}}
     <div class="glass rounded-2xl p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <div class="flex-1 flex items-center gap-4" id="stepIndicators"></div>
@@ -198,327 +156,458 @@
         <div class="flex items-center justify-between text-xs text-gray-400" id="stepLabels"></div>
     </div>
 
-    <!-- Main Content Card -->
     <div class="glass rounded-3xl overflow-hidden">
         <div class="p-8">
+            <div id="alerts"></div>
             <div id="stepContainer"></div>
 
-            <!-- Generation result -->
-            <div id="resultContainer" class="hidden">
-                <div class="text-sm font-medium text-gray-300 mb-3">Result</div>
-                <div class="rounded-xl overflow-hidden border border-white/10">
-                    <img id="resultImage" class="w-full h-auto object-cover" alt="result"/>
+            <div id="resultContainer" class="hidden mt-6">
+                <div class="glass rounded-2xl p-4">
+                    <div class="text-sm font-medium text-gray-300 mb-3">Result</div>
+                    <div class="rounded-xl overflow-hidden border border-white/10">
+                        <img id="resultImage" src="" alt="result" class="w-full h-auto object-cover"/>
+                    </div>
                 </div>
             </div>
 
-            <!-- Navigation Buttons -->
             <div class="flex items-center justify-between gap-4 mt-6">
                 <button id="prevBtn" class="btn-secondary h-12 px-8 rounded-xl font-semibold">← Back</button>
-                <div class="text-sm text-gray-400" id="stepCounter">Step 1 of 1</div>
+                <div class="text-sm text-gray-400" id="stepCounter">Step 1</div>
                 <button id="nextBtn" class="btn-primary h-12 px-8 rounded-xl text-white font-semibold">Next →</button>
             </div>
         </div>
     </div>
 
-    <!-- Quick Tips -->
     <div class="mt-6 glass rounded-2xl p-4" id="tipContainer"></div>
 </main>
 
 <script>
-    // ===== Config =====
-    const studioCode = 'model';
-    let userGender = 'both';
+    const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+    const WIZARD = @json($wizard);
 
-    // ===== State =====
-    let steps = [];
-    let currentStepIndex = 0;
-    const selections = {}; // { sectionCode: { type, values/value/file } }
+    let gender = null;
+    let currentStep = 0;
+    const totalSteps = Array.isArray(WIZARD?.steps) && WIZARD.steps.length ? WIZARD.steps.length : 1; // still show Step 1 UI
+    const selections = {}; // { [sectionKey]: value|string[]|boolean }
+    let step1LockedForUploads = true; // uploads must be done before selecting any first-step section
 
-    // ===== API helpers =====
+    // Shortcuts
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+    const stepContainer = $('#stepContainer');
+    const stepIndicators = $('#stepIndicators');
+    const stepLabels = $('#stepLabels');
+    const stepCounter = $('#stepCounter');
+    const prevBtn = $('#prevBtn');
+    const nextBtn = $('#nextBtn');
+    const resultContainer = $('#resultContainer');
+    const resultImage = $('#resultImage');
+    const tipContainer = $('#tipContainer');
+    const alerts = $('#alerts');
 
-    async function fetchStudioTree(code, gender = 'both') {
-        const res = await fetch(`/api/v1/studios/${code}?gender=${encodeURIComponent(gender)}`);
-        if (!res.ok) throw new Error('Failed to load studio');
-        const json = await res.json();
-        return json.data || json;
-    }
-
-    async function postGenerate(code, payload) {
-        const res = await fetch(`/api/v1/studios/${code}/generate`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error('Generation failed');
-        return res.json();
-    }
-
-    // ===== UI helpers =====
-    function setTip(text) {
-        document.getElementById('tipContainer').innerHTML = `
-        <div class="flex items-start gap-3">
-          <div class="text-2xl">💡</div>
-          <div>
-            <div class="font-semibold text-sm mb-1">Pro Tip</div>
-            <div class="text-sm text-gray-400">${text}</div>
-          </div>
-        </div>`;
+    /** Only filter admin sections by gender; uploads+gender are NOT from WIZARD */
+    function visibleGroups(step) {
+        const g = gender;
+        const groups = (step?.groups || []);
+        return groups.map(gr => {
+            const filtered = (gr.sections || []).filter(sec => {
+                const sGender = sec.gender || 'both';
+                return !g || sGender === 'both' || sGender === g;
+            });
+            return {...gr, sections: filtered};
+        }).filter(gr => gr.sections.length);
     }
 
     function renderIndicators() {
-        const stepNames = steps.map(s => s.title || s.name || 'Step');
-        const current = currentStepIndex + 1;
-        const total = steps.length;
-
-        const indicatorsHTML = stepNames.map((_, i) => {
-            const num = i + 1;
-            let cls = 'step-indicator w-12 h-12 rounded-full flex items-center justify-center font-bold border-2';
-            const label = (num < current) ? '✓' : num;
-            if (num < current) cls += ' step-complete';
-            else if (num === current) cls += ' step-active';
-            else cls += ' glass border';
+        stepIndicators.innerHTML = Array.from({length: totalSteps}).map((_, i) => {
+            const done = i < currentStep;
+            const active = i === currentStep;
+            const base = 'step-indicator w-12 h-12 rounded-full flex items-center justify-center font-bold border-2';
+            const cls = done ? base + ' step-complete' : active ? base + ' step-active' : base + ' glass';
+            const label = done ? '✓' : (i + 1);
             return `<div class="${cls}">${label}</div>`;
         }).join('');
-        document.getElementById('stepIndicators').innerHTML = indicatorsHTML;
-
-        const labelsHTML = stepNames.map((name, i) => {
-            const isActive = i === currentStepIndex;
-            return `<span class="${isActive ? 'text-indigo-400 font-semibold' : ''}">${name}</span>`;
-        }).join('');
-        document.getElementById('stepLabels').innerHTML = labelsHTML;
-
-        document.getElementById('stepCounter').textContent = `Step ${current} of ${total}`;
+        // Titles from WIZARD if available
+        stepLabels.innerHTML = (WIZARD?.steps || []).length
+            ? WIZARD.steps.map((s, i) => `<span class="${i === currentStep ? 'text-indigo-400 font-semibold' : ''}">${s.title}</span>`).join('')
+            : `<span class="text-indigo-400 font-semibold">Step 1</span>`;
+        stepCounter.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
     }
 
-    function chip(label, active, slug, iconUrl) {
-        const base = active ? 'chip-active' : 'chip';
-        return `
-        <button class="${base} rounded-xl p-3 text-center text-sm" data-choice="${slug}">
-          ${iconUrl ? `<img src="${iconUrl}" alt="" class="w-5 h-5 inline-block mr-1 align-[-2px]"/>` : ''}
-          ${label}
-        </button>`;
+    function inputRow(label, inner) {
+        return `<div class="mb-4">
+          ${label ? `<label class="text-sm font-medium text-gray-300 mb-2 block">${label}</label>` : ''}
+          ${inner}
+        </div>`;
     }
 
-    function renderSection(sec) {
-        const secAttr = `data-section="${sec.code}" data-type="${sec.input_type}" data-mode="${sec.selection_mode}" data-max="${sec.max_select || 1}" data-min="${sec.min_select || 0}" data-group="${sec.group?.code || ''}" ${sec.group?.exclusive_sections ? 'data-exclusive="1"' : ''}`;
-        const title = `<div class="text-sm font-medium text-gray-300 mb-2">${(sec.name || '').trim()}${sec.is_required ? ' <span class="text-pink-400">*</span>' : ''}</div>`;
+    function sectionHTML(sec, groupExclusive) {
+        const key = sec.key;
+        const val = selections[key];
 
-        if (sec.input_type === 'chips') {
-            const gridCols = (sec.max_select && sec.max_select > 4) ? 'grid-cols-4' : 'grid-cols-3';
-            const cards = (sec.choices || []).map(c => chip(c.label, !!c.is_default, c.slug, c.icon_url)).join('');
-            return `<div class="mb-6" ${secAttr}>
-          ${title}
-          <div class="grid ${gridCols} gap-3">${cards}</div>
-        </div>`;
+        // Disabled state if group is exclusive and another section already chosen
+        let disableSection = false;
+        if (groupExclusive) {
+            const chosen = exclusiveChosenKeyInGroup(sec);
+            if (chosen && chosen !== key) disableSection = true;
+        }
+        const disabled = disableSection ? 'disabled' : '';
+        const disabledCls = disableSection ? 'opacity-50 pointer-events-none' : '';
+
+        if (sec.type === 'textarea') {
+            return `<div class="${disabledCls}">
+              ${inputRow(sec.label, `<textarea data-sec="${key}" class="w-full rounded-xl input-field p-4 text-base resize-none" rows="4" ${disabled}>${val ?? ''}</textarea>`)}
+            </div>`;
         }
 
-        if (sec.input_type === 'text') {
-            return `<div class="mb-6" ${secAttr}>
-          ${title}
-          <input class="w-full rounded-xl input-field p-3 text-sm" placeholder="Type here"/>
-        </div>`;
+        if (sec.type === 'text') {
+            return `<div class="${disabledCls}">
+              ${inputRow(sec.label, `<input data-sec="${key}" class="w-full rounded-xl input-field p-3 text-sm" value="${val ?? ''}" ${disabled}/>`)}
+            </div>`;
         }
 
-        if (sec.input_type === 'textarea') {
-            return `<div class="mb-6" ${secAttr}>
-          ${title}
-          <textarea rows="4" class="w-full rounded-xl input-field p-4 text-base resize-none" placeholder="Write here..."></textarea>
-        </div>`;
+        if (sec.type === 'select') {
+            const opts = (sec.options || []).map(o => {
+                const selected = (val ?? sec.options?.[0]?.key) === o.key ? 'selected' : '';
+                return `<option value="${o.key}" ${selected}>${o.label}</option>`;
+            }).join('');
+            return `<div class="${disabledCls}">
+              ${inputRow(sec.label, `<select data-sec="${key}" class="w-full rounded-xl input-field p-3 text-sm" ${disabled}>${opts}</select>`)}
+            </div>`;
         }
 
-        if (sec.input_type === 'upload') {
-            return `<div class="mb-6" ${secAttr}>
-          ${title}
-          <input type="file" accept="image/*" class="w-full rounded-xl input-field p-3 text-sm"/>
-        </div>`;
+        if (sec.type === 'chips') {
+            const mode = sec.selection || 'single';
+            const cur = val ?? (mode === 'multiple' ? [] : null);
+            const chips = (sec.options || []).map(o => {
+                const active = mode === 'multiple' ? (cur || []).includes(o.key) : cur === o.key;
+                return `<button type="button" class="px-4 py-2 rounded-full chip ${active ? 'chip-active' : ''} text-sm"
+                        data-chip data-sec="${key}" data-mode="${mode}" data-val="${o.key}" ${disabled}>
+                        ${o.icon ? o.icon + ' ' : ''}${o.label}</button>`;
+            }).join('');
+            return `<div class="${disabledCls}">
+              ${inputRow(sec.label, `<div class="flex flex-wrap gap-2">${chips}</div>`)}
+            </div>`;
+        }
+
+        if (sec.type === 'checkbox' || sec.type === 'boolean') {
+            const checked = val ? 'checked' : '';
+            return `<label class="rounded-xl glass p-3 flex items-center justify-between cursor-pointer hover:bg-white/10 ${disabledCls}">
+              <span class="text-sm">${sec.label}</span>
+              <input type="checkbox" data-sec="${key}" ${checked} ${disabled}/>
+            </label>`;
         }
 
         return '';
     }
 
-    function renderCurrentStep() {
-        const step = steps[currentStepIndex];
-        const sectionsHTML = (step.sections || []).map(renderSection).join('');
-        const title = step.title || step.name || `Step ${currentStepIndex + 1}`;
-
-        document.getElementById('stepContainer').innerHTML = `
-        <div class="mb-8 step-content active">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">${currentStepIndex + 1}</div>
-            <div>
-              <h2 class="text-2xl font-bold gradient-text">${title}</h2>
-              ${step.subtitle ? `<p class="text-gray-400 text-sm">${step.subtitle}</p>` : ''}
-            </div>
-          </div>
-          ${sectionsHTML}
-        </div>`;
-
-        bindInteractionsForStep();
-        setTip('Pick options — everything you see comes from the Admin.');
+    function exclusiveChosenKeyInGroup(sampleSection) {
+        const step = (WIZARD?.steps || [])[currentStep];
+        if (!step) return null;
+        for (const g of (step.groups || [])) {
+            if (!g.exclusive) continue;
+            const keys = (g.sections || []).map(s => s.key);
+            if (!keys.includes(sampleSection.key)) continue;
+            for (const k of keys) {
+                const v = selections[k];
+                const chosenNow = !(v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'boolean' && v === false));
+                if (chosenNow) return k;
+            }
+        }
+        return null;
     }
 
-    // ===== Selection logic =====
-    function enforceExclusivity(container, clickedBtn) {
-        const groupCode = container.dataset.group;
-        const isExclusive = container.dataset.exclusive === '1';
-        if (!groupCode || !isExclusive) return;
-        const root = document.getElementById('stepContainer');
-        root.querySelectorAll(`[data-group="${groupCode}"] .chip-active`).forEach(el => {
-            if (el !== clickedBtn) {
-                el.classList.remove('chip-active');
-                el.classList.add('chip');
+    /** --- HARD-PINNED blocks (NOT from WIZARD) --- */
+
+    // 1) IMAGE UPLOAD — first in Step 1
+    function pinnedUploads() {
+        return `
+          <div class="mb-6">
+            <label class="text-sm font-medium text-gray-300 mb-3 block">Upload Reference Images (up to 3)</label>
+            <input id="imagesInput" type="file" accept="image/*" multiple class="w-full rounded-xl input-field p-3 text-sm"/>
+            <div class="text-xs text-gray-400 mt-2">Add up to 3 images <b>before</b> selecting any option in this step.</div>
+            <div id="imagesPreview" class="mt-3 grid grid-cols-3 gap-3"></div>
+          </div>
+        `;
+    }
+
+    // 2) GENDER — second in Step 1
+    function pinnedGender() {
+        const maleActive = gender === 'male' ? 'chip-active' : '';
+        const femaleActive = gender === 'female' ? 'chip-active' : '';
+        return `
+          <div class="mb-6">
+            <div class="text-sm font-medium text-gray-300 mb-2">Select Gender</div>
+            <div class="flex gap-2">
+              <button type="button" class="px-4 py-2 rounded-full chip ${maleActive}" data-gender-btn="male">Male</button>
+              <button type="button" class="px-4 py-2 rounded-full chip ${femaleActive}" data-gender-btn="female">Female</button>
+            </div>
+          </div>
+        `;
+    }
+
+    function renderStep() {
+        const stepFromAdmin = (WIZARD?.steps || [])[currentStep] || null;
+        const groups = stepFromAdmin ? visibleGroups(stepFromAdmin) : [];
+
+        // Header (from admin if exists)
+        const header = stepFromAdmin ? `
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">${currentStep + 1}</div>
+              <div>
+                <h2 class="text-2xl font-bold gradient-text">${stepFromAdmin.title}</h2>
+                <p class="text-gray-400 text-sm">${stepFromAdmin.subtitle || ''}</p>
+              </div>
+            </div>` : `
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">${currentStep + 1}</div>
+              <div>
+                <h2 class="text-2xl font-bold gradient-text">Step 1</h2>
+                <p class="text-gray-400 text-sm">Start by adding images and choosing gender</p>
+              </div>
+            </div>`;
+
+        // Render (pinned uploads + gender FIRST), then admin groups
+        stepContainer.innerHTML = `
+          <div class="mb-8">
+            ${header}
+
+            ${currentStep === 0 ? pinnedUploads() : ''}
+            ${currentStep === 0 ? pinnedGender() : ''}
+
+            ${groups.length ? groups.map(g => `
+              <div class="space-y-4 mb-6" data-group data-exclusive="${g.exclusive ? '1' : '0'}">
+                ${(g.sections || []).map(sec => `
+                  <div class="group-section" data-section="${sec.key}">
+                    ${sectionHTML(sec, g.exclusive)}
+                  </div>`).join('')}
+              </div>`).join('') : (stepFromAdmin
+            ? ''
+            : `<div class="text-sm text-gray-400">No admin sections configured yet.</div>`)}
+          </div>
+        `;
+
+        // Bind per-step elements
+        bindInputsAndChips();
+        if (currentStep === 0) {
+            bindUploads();
+            bindGender();
+        }
+
+        tipContainer.innerHTML = `
+          <div class="flex items-start gap-3">
+            <div class="text-2xl">💡</div>
+            <div>
+              <div class="font-semibold text-sm mb-1">Pro Tip</div>
+              <div class="text-sm text-gray-400">${stepFromAdmin?.tip || 'Add at least one image and pick gender to tailor the next options.'}</div>
+            </div>
+          </div>
+        `;
+    }
+
+    function bindUploads() {
+        const input = $('#imagesInput');
+        const preview = $('#imagesPreview');
+        if (!input) return;
+
+        input.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length > 3) {
+                show('You can upload up to 3 images.', 'error');
+                input.value = '';
+                preview.innerHTML = '';
+                return;
             }
+            preview.innerHTML = '';
+            files.forEach(f => {
+                const r = new FileReader();
+                r.onload = () => {
+                    const img = document.createElement('img');
+                    img.src = r.result;
+                    img.className = 'w-full h-28 object-cover rounded-xl';
+                    preview.appendChild(img);
+                };
+                r.readAsDataURL(f);
+            });
+            // Only sections are locked; gender is always allowed
+            step1LockedForUploads = false;
         });
     }
 
-    function bindInteractionsForStep() {
-        document.querySelectorAll('#stepContainer [data-section] .chip, #stepContainer [data-section] .chip-active')
-            .forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const container = e.currentTarget.closest('[data-section]');
-                    const mode = container.dataset.mode;
-                    const max = parseInt(container.dataset.max || '1', 10);
+    function bindGender() {
+        $$('[data-gender-btn]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                gender = btn.getAttribute('data-gender-btn');
+                $$('[data-gender-btn]').forEach(b => b.classList.remove('chip-active'));
+                btn.classList.add('chip-active');
+                // re-render to apply gender filtering on admin sections
+                render();
+            });
+        });
+    }
 
-                    if (mode === 'single') {
-                        container.querySelectorAll('.chip-active').forEach(x => {
-                            x.classList.remove('chip-active');
-                            x.classList.add('chip');
-                        });
-                        e.currentTarget.classList.remove('chip');
-                        e.currentTarget.classList.add('chip-active');
-                    } else {
-                        const isActive = e.currentTarget.classList.contains('chip-active');
-                        if (isActive) {
-                            e.currentTarget.classList.remove('chip-active');
-                            e.currentTarget.classList.add('chip');
-                        } else {
-                            const activeCount = container.querySelectorAll('.chip-active').length;
-                            if (activeCount < max) {
-                                e.currentTarget.classList.remove('chip');
-                                e.currentTarget.classList.add('chip-active');
-                            }
-                        }
+    function bindInputsAndChips() {
+        // Lock admin sections on step 1 until uploads selected (gender is allowed anytime)
+        if (currentStep === 0 && step1LockedForUploads) {
+            stepContainer.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-sec],[data-chip]');
+                if (target) {
+                    const imagesInput = $('#imagesInput');
+                    if (imagesInput && (!imagesInput.files || imagesInput.files.length === 0)) {
+                        e.preventDefault();
+                        show('Upload up to 3 images first (or skip uploads by choosing Next).', 'error');
                     }
-                    enforceExclusivity(container, e.currentTarget);
-                    saveSectionState(container);
-                });
-            });
+                }
+            }, {once: true});
+        }
 
-        document.querySelectorAll('#stepContainer [data-section] input[type="text"], #stepContainer [data-section] textarea')
-            .forEach(input => {
-                input.addEventListener('input', (e) => {
-                    saveSectionState(e.currentTarget.closest('[data-section]'));
-                });
-            });
-
-        document.querySelectorAll('#stepContainer [data-section] input[type="file"]')
-            .forEach(input => {
-                input.addEventListener('change', (e) => {
-                    saveSectionState(e.currentTarget.closest('[data-section]'));
-                });
-            });
-    }
-
-    function saveSectionState(container) {
-        const sectionCode = container.dataset.section;
-        const type = container.dataset.type;
-
-        if (type === 'chips') {
-            selections[sectionCode] = {
-                type: 'chips',
-                values: Array.from(container.querySelectorAll('.chip-active')).map(b => b.getAttribute('data-choice')),
+        // Inputs
+        $$('[data-sec]').forEach(el => {
+            const key = el.getAttribute('data-sec');
+            const handler = () => {
+                const type = el.getAttribute('type');
+                let v;
+                if (type === 'checkbox') v = el.checked; else v = el.value;
+                selections[key] = v;
+                enforceExclusivity(key);
             };
-            return;
-        }
-        if (type === 'text') {
-            selections[sectionCode] = {type: 'text', value: container.querySelector('input[type="text"]').value || ''};
-            return;
-        }
-        if (type === 'textarea') {
-            selections[sectionCode] = {type: 'textarea', value: container.querySelector('textarea').value || ''};
-            return;
-        }
-        if (type === 'upload') {
-            const f = container.querySelector('input[type="file"]').files?.[0] || null;
-            selections[sectionCode] = {type: 'upload', file: f ? '[binary]' : null}; // placeholder
-            return;
+            el.addEventListener('input', handler);
+            el.addEventListener('change', handler);
+        });
+
+        // Chips
+        $$('[data-chip]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-sec');
+                const mode = btn.getAttribute('data-mode') || 'single';
+                let curr = selections[key];
+
+                if (mode === 'single') {
+                    selections[key] = btn.getAttribute('data-val');
+                    $$(`[data-chip][data-sec="${key}"]`).forEach(b => b.classList.remove('chip-active'));
+                    btn.classList.add('chip-active');
+                } else {
+                    curr = Array.isArray(curr) ? curr : [];
+                    const val = btn.getAttribute('data-val');
+                    const i = curr.indexOf(val);
+                    if (i >= 0) curr.splice(i, 1); else curr.push(val);
+                    selections[key] = curr;
+                    btn.classList.toggle('chip-active');
+                }
+                enforceExclusivity(key);
+            });
+        });
+    }
+
+    function enforceExclusivity(changedKey) {
+        const step = (WIZARD?.steps || [])[currentStep];
+        if (!step) return;
+        for (const g of (step.groups || [])) {
+            if (!g.exclusive) continue;
+            const keys = (g.sections || []).map(s => s.key);
+            if (!keys.includes(changedKey)) continue;
+
+            let chosen = null;
+            for (const k of keys) {
+                const v = selections[k];
+                const chosenNow = !(v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'boolean' && v === false));
+                if (chosenNow) {
+                    chosen = k;
+                    break;
+                }
+            }
+
+            keys.forEach(k => {
+                if (k === chosen) return;
+                const el = stepContainer.querySelector(`[data-section="${k}"]`);
+                if (!el) return;
+                if (chosen) el.classList.add('opacity-50', 'pointer-events-none');
+                else el.classList.remove('opacity-50', 'pointer-events-none');
+            });
         }
     }
 
-    // ===== Navigation & Generate =====
-    function go(stepIndexDelta) {
-        const next = currentStepIndex + stepIndexDelta;
-        if (next < 0 || next >= steps.length) return;
-        currentStepIndex = next;
+    function render() {
         renderIndicators();
-        renderCurrentStep();
-        syncButtons();
+        renderStep();
+        prevBtn.disabled = currentStep === 0;
+        nextBtn.textContent = currentStep === totalSteps - 1 ? '✨ Generate Image' : 'Next →';
+        resultContainer.classList.add('hidden');
     }
 
-    function syncButtons() {
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-
-        prevBtn.disabled = currentStepIndex === 0;
-        prevBtn.style.opacity = currentStepIndex === 0 ? '0.5' : '1';
-        nextBtn.innerHTML = (currentStepIndex === steps.length - 1) ? '✨ Generate Image' : 'Next →';
-    }
-
-    async function onGenerate(nextBtn) {
-        try {
-            nextBtn.disabled = true;
-            const original = nextBtn.textContent;
-            nextBtn.textContent = 'Generating…';
-
-            // Hide previous result (if any)
-            document.getElementById('resultContainer').classList.add('hidden');
-
-            const payload = {
-                gender: userGender,
-                selections: selections
-            };
-
-            const resp = await postGenerate(studioCode, payload);
-
-            // Show result image from backend
-            const imgEl = document.getElementById('resultImage');
-            imgEl.src = resp.image_url;
-            imgEl.alt = 'Generated image';
-            document.getElementById('resultContainer').classList.remove('hidden');
-
-            nextBtn.textContent = original; // keep the label as "✨ Generate Image"
-        } catch (e) {
-            console.error(e);
-            alert('Generation failed. Please try again.');
-        } finally {
-            document.getElementById('nextBtn').disabled = false;
+    prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) {
+            currentStep--;
+            render();
         }
-    }
-
-    // Attach listeners ONCE
-    document.getElementById('prevBtn').addEventListener('click', () => go(-1));
-    document.getElementById('nextBtn').addEventListener('click', async (e) => {
-        if (currentStepIndex < steps.length - 1) return go(+1);
-        await onGenerate(e.currentTarget);
     });
 
-    // ===== Boot =====
-    (async function init() {
+    nextBtn.addEventListener('click', async () => {
+        if (!gender) {
+            show('Please select gender first.', 'error');
+            return;
+        }
+
+        if (currentStep < totalSteps - 1) {
+            currentStep++;
+            render();
+            return;
+        }
+        await generate();
+    });
+
+    async function generate() {
         try {
-            const studio = await fetchStudioTree(studioCode, userGender);
-            steps = (studio.steps || []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-            if (!steps.length) {
-                document.getElementById('stepContainer').innerHTML = '<div class="text-gray-400">No steps configured.</div>';
+            disableNav(true, 'Generating…');
+
+            const fd = new FormData();
+            fd.append('gender', gender);
+            fd.append('selections', JSON.stringify(selections));
+            const imagesInput = $('#imagesInput');
+            if (imagesInput && imagesInput.files) {
+                Array.from(imagesInput.files).slice(0, 3).forEach((f, i) => fd.append(`images[${i}]`, f));
+            }
+
+            const res = await fetch(`{{ route('creator.generate') }}`, {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': CSRF},
+                body: fd
+            });
+
+            if (!res.ok) {
+                const t = await res.text();
+                show('Generation failed: ' + t, 'error');
                 return;
             }
-            renderIndicators();
-            renderCurrentStep();
-            syncButtons();
-        } catch (e) {
-            console.error(e);
-            document.getElementById('stepContainer').innerHTML = '<div class="text-red-400">Failed to load from Admin. Check the API.</div>';
+
+            const data = await res.json();
+            if (data.status === 'ok' && data.image_url) {
+                resultImage.src = data.image_url;
+                resultContainer.classList.remove('hidden');
+                resultContainer.scrollIntoView({behavior: 'smooth', block: 'center'});
+            } else {
+                show('Generation failed: invalid response.', 'error');
+            }
+        } catch {
+            show('Network error. Please try again.', 'error');
+        } finally {
+            disableNav(false);
         }
-    })();
+    }
+
+    function disableNav(state, text) {
+        prevBtn.disabled = state || currentStep === 0;
+        nextBtn.disabled = state;
+        nextBtn.textContent = state && text ? text : (currentStep === totalSteps - 1 ? '✨ Generate Image' : 'Next →');
+    }
+
+    function show(msg, type = 'info') {
+        alerts.innerHTML = `<div class="mb-4 rounded-xl p-3 ${type === 'error' ? 'bg-red-500/10 border border-red-400/40' : 'glass'} text-sm">${msg}</div>`;
+        setTimeout(() => alerts.innerHTML = '', 3500);
+    }
+
+    // init
+    render();
 </script>
 </body>
 </html>

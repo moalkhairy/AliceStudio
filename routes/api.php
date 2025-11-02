@@ -12,5 +12,5 @@ Route::prefix('v1')->group(function () {
     Route::get('/steps/{step}/sections', [\App\Http\Controllers\Api\StudioPublicController::class, 'sections']);
 
     // Generate (NEW)
-    Route::post('/studios/{studio:code}/generate', [\App\Http\Controllers\Api\StudioPublicController::class, 'generate']);
+    Route::post('/studios/{studio:code}/generate', [\App\Http\Controllers\CreatorController::class, 'generate']);
 });

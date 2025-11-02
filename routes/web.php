@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 
-Route::get("/", function () {
-    return view("welcome");
-});
+//Route::get("/", function () {
+//    return view("welcome");
+//});
 
 Route::group(['prefix' => 'admin'], function () {
     Route::name('voyager.')->group(function () {
@@ -46,5 +46,5 @@ Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
 });
 
-Route::get('/creator', [\App\Http\Controllers\CreatorController::class, 'index'])->name('creator.index');
+Route::get('/', [\App\Http\Controllers\CreatorController::class, 'index'])->name('creator.index');
 Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class, 'generate'])->name('creator.generate');
