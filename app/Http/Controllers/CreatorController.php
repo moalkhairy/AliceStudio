@@ -301,6 +301,28 @@ class CreatorController extends Controller
             $aspectLine
         );
 
+        $imageParts = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                if (!$file->isValid()) continue;
+                $mime = $file->getMimeType() ?: 'image/png'; // fallback
+                $bytes = file_get_contents($file->getRealPath());
+                $b64 = base64_encode($bytes);
+
+                // Only allow common formats
+                if (!in_array($mime, ['image/png', 'image/jpeg', 'image/webp'])) {
+                    // you can skip or normalize; here we skip unsupported types
+                    continue;
+                }
+                $imageParts[] = [
+                    'inlineData' => [
+                        'mimeType' => $mime,
+                        'data' => $b64, // NOTE: base64 only, no "data:image/..." prefix
+                    ],
+                ];
+            }
+        }
+
         // ---------- If you ONLY want to return the prompt to the frontend, uncomment:
         // return response()->json(['status' => 'ok', 'prompt' => $prompt]);
 
@@ -312,11 +334,13 @@ class CreatorController extends Controller
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
+        $parts = array_merge($imageParts, [['text' => $prompt]]);
+
         // We send ONLY the prompt text; ask for an image response
         $payload = [
             'contents' => [[
-                'role'  => 'user',
-                'parts' => [['text' => $prompt]],
+                'role' => 'user',
+                'parts' => $parts,
             ]],
             // optional tuning only (no response_mime_type here)
             'generationConfig' => [
