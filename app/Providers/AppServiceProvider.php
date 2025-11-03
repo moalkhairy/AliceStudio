@@ -3,12 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Models\Quotation;
-use App\Models\QuotationItem;
-use App\Models\QuotationSection;
-use App\Observers\QuotationObserver;
-use App\Observers\QuotationItemObserver;
-use App\Observers\QuotationSectionObserver;
+use App\Models\CoinPackage;
+use App\Observers\CoinPackageObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,5 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        CoinPackage::observe(CoinPackageObserver::class);
     }
 }

@@ -42,12 +42,35 @@ Route::group(['prefix' => 'admin'], function () {
         Route::get('steps/{step}/move-down/{pivot}', [\App\Http\Controllers\Admin\StepController::class, 'moveDown'])->name('steps.move-down');
     });
 
+    Route::get('coin-packages', [\App\Http\Controllers\Admin\CoinPackageController::class, 'index'])->name('voyager.coin_packages.index');
+    Route::get('coin-packages/create', [\App\Http\Controllers\Admin\CoinPackageController::class, 'create'])->name('voyager.coin_packages.create');
+    Route::post('coin-packages', [\App\Http\Controllers\Admin\CoinPackageController::class, 'store'])->name('voyager.coin_packages.store');
+    Route::get('coin-packages/{id}/edit', [\App\Http\Controllers\Admin\CoinPackageController::class, 'edit'])->name('voyager.coin_packages.edit');
+    Route::put('coin-packages/{id}', [\App\Http\Controllers\Admin\CoinPackageController::class, 'update'])->name('voyager.coin_packages.update');
+    Route::delete('coin-packages/{id}', [\App\Http\Controllers\Admin\CoinPackageController::class, 'destroy'])->name('voyager.coin_packages.destroy');
+    Route::get('coin-packages/{id}', [\App\Http\Controllers\Admin\CoinPackageController::class, 'show'])->name('voyager.coin_packages.show');
+
+    // -------------------------------------------------------------------------
+    // Client Orders (read-only)
+    // -------------------------------------------------------------------------
+    Route::get('client-orders', [\App\Http\Controllers\Admin\ClientOrderController::class, 'index'])->name('voyager.client_orders.index');
+    Route::get('client-orders/{id}', [\App\Http\Controllers\Admin\ClientOrderController::class, 'show'])->name('voyager.client_orders.show');
+
+    // -------------------------------------------------------------------------
+    // Wallet Transactions (read-only)
+    // -------------------------------------------------------------------------
+    Route::get('wallet-transactions', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'index'])->name('voyager.wallet_transactions.index');
+    Route::get('wallet-transactions/{id}', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'show'])->name('voyager.wallet_transactions.show');
+
 
     Voyager::routes();
 });
 
 Route::get('/', [\App\Http\Controllers\CreatorController::class, 'index'])->name('creator.index');
-Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class, 'generate'])->name('creator.generate');
+Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class,'generate'])
+    ->middleware(['client.auth','client.hasCoins'])
+    ->name('creator.generate');
+//Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class, 'generate'])->name('creator.generate');
 
 
 Route::prefix('client')->name('client.')->group(function () {
@@ -78,8 +101,6 @@ Route::prefix('client')->name('client.')->group(function () {
 
 
 Route::prefix('client')->name('client.')->group(function () {
-    // guest routes (login/register etc.) remain as you already added…
-
     Route::middleware('auth:client')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\ClientAccountController::class, 'dashboard'])->name('dashboard');
         Route::get('profile', [\App\Http\Controllers\ClientAccountController::class, 'profile'])->name('profile');
@@ -87,4 +108,24 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('profile/password', [\App\Http\Controllers\ClientAccountController::class, 'updatePassword'])->name('profile.password');
         Route::post('logout', [\App\Http\Controllers\ClientAccountController::class, 'logout'])->name('logout');
     });
+});
+
+Route::prefix('client')->name('client.')->group(function () {
+
+    // OTP verify pages for logged-in clients
+    Route::middleware('auth:client')->group(function () {
+        Route::get('verify', [\App\Http\Controllers\ClientOtpController::class, 'showVerify'])->name('verify.show');
+        Route::post('verify/send', [\App\Http\Controllers\ClientOtpController::class, 'send'])->name('verify.send');
+        Route::post('verify', [\App\Http\Controllers\ClientOtpController::class, 'verify'])->name('verify.perform');
+
+        // Packages & wallet (require verified)
+        Route::middleware('client.verified')->group(function () {
+            Route::get('packages', [\App\Http\Controllers\ClientPackageController::class, 'index'])->name('packages.index');
+            Route::post('packages/{package}/buy', [\App\Http\Controllers\ClientPackageController::class, 'buy'])->name('packages.buy');
+
+            Route::get('wallet', [\App\Http\Controllers\ClientWalletController::class, 'index'])->name('wallet.index');
+        });
+    });
+
+    // Your existing auth routes (login/register/logout/dashboard/profile) remain as added earlier
 });

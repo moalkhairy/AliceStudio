@@ -152,6 +152,9 @@
                                 </button>
                             </form>
                         </div>
+                        @auth('client')
+                            <span class="ml-3 text-xs glass px-2 py-1 rounded-full">💰 {{ auth('client')->user()->coins }}</span>
+                        @endauth
                     </details>
                 @endguest
             </div>

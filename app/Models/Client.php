@@ -24,4 +24,15 @@ class Client extends Authenticatable
     {
         return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? '')) ?: ($this->email ?? 'Client');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\ClientOrder::class);
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(\App\Models\WalletTransaction::class);
+    }
+
 }

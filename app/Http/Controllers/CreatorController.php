@@ -393,6 +393,13 @@ class CreatorController extends Controller
         Storage::disk('public')->put($path, $binary);
         $imageUrl = Storage::disk('public')->url($path);
 
+        app(\App\Services\WalletService::class)->adjust(
+            auth('client')->user(),
+            -1,
+            'image_generation',
+            ['prompt' => $prompt] // optional
+        );
+
         return response()->json([
             'status' => 'ok',
             'image_url' => $imageUrl,

@@ -40,6 +40,16 @@ class ClientAuthController extends Controller
         ]);
 
         Auth::guard('client')->login($client);
+
+        app(\App\Services\ClientOtpService::class)->createAndSend($client, 10);
+
+        app(\App\Services\WalletService::class)->adjust(
+            $client,
+            +3,
+            'signup_bonus',
+            ['reason' => 'First registration bonus']
+        );
+//        return redirect()->route('client.verify.show')->with('status', 'We sent a verification code to your email.');
         return redirect()->intended(route('client.dashboard'));
     }
 

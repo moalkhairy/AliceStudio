@@ -68,5 +68,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'auth:client' => \Illuminate\Auth\Middleware\Authenticate::class, // Specify 'client' guard
         'validate.client.token' => \App\Http\Middleware\ValidateClientToken::class,
+        'client.verified' => \App\Http\Middleware\EnsureClientEmailIsVerified::class,
+        'client.hasCoins' => \App\Http\Middleware\EnsureClientHasCoins::class,
     ];
 }

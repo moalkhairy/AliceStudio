@@ -129,6 +129,30 @@
     </style>
 </head>
 <body class="min-h-screen">
+@include("client.partials.navbar")
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    @include('client.partials.flashes')
+    @auth('client')
+        @if((auth('client')->user()->coins ?? 0) < 1)
+            <div class="mb-4 rounded-xl p-3 bg-yellow-500/10 border border-yellow-400/40 text-sm text-white/90 flex items-center justify-between">
+                <span>You have 0 coins. Buy a package to generate images.</span>
+                <a href="{{ route('client.packages.index') }}" class="px-3 py-1.5 rounded-lg btn-primary text-white">View
+                    Packages</a>
+            </div>
+        @endif
+    @endauth
+    @guest('client')
+        <div class="mb-4 rounded-xl p-3 glass text-sm text-white/90 flex items-center justify-between">
+            <span>Login to track your coins and purchases.</span>
+            <div class="flex gap-2">
+                <a href="{{ route('client.login') }}" class="px-3 py-1.5 rounded-lg glass hover:bg-white/10">Login</a>
+                <a href="{{ route('client.register') }}"
+                   class="px-3 py-1.5 rounded-lg btn-primary text-white">Register</a>
+            </div>
+        </div>
+    @endguest
+</div>
+
 <!-- background glows -->
 <div class="fixed inset-0 overflow-hidden pointer-events-none">
     <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
