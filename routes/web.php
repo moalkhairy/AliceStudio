@@ -67,9 +67,11 @@ Route::group(['prefix' => 'admin'], function () {
 });
 
 Route::get('/', [\App\Http\Controllers\CreatorController::class, 'index'])->name('creator.index');
-Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class,'generate'])
-    ->middleware(['client.auth','client.hasCoins'])
-    ->name('creator.generate');
+Route::middleware('auth:client')->group(function () {
+    Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class, 'generate'])
+//    ->middleware(['client.auth','client.hasCoins'])
+        ->name('creator.generate');
+});
 //Route::post('/creator/generate', [\App\Http\Controllers\CreatorController::class, 'generate'])->name('creator.generate');
 
 
@@ -92,11 +94,11 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::get('oauth/{provider}/callback', [\App\Http\Controllers\ClientSocialController::class, 'callback'])->name('oauth.callback');
     });
 
-    Route::middleware('auth:client')->group(function () {
-        Route::post('logout', [\App\Http\Controllers\ClientAuthController::class, 'logout'])->name('logout');
-        Route::get('dashboard', fn() => view('client.dashboard'))->name('dashboard');
-        Route::get('profile', fn() => view('client.profile'))->name('profile');
-    });
+//    Route::middleware('auth:client')->group(function () {
+////        Route::post('logout', [\App\Http\Controllers\ClientAuthController::class, 'logout'])->name('logout');
+////        Route::get('dashboard', fn() => view('client.dashboard'))->name('dashboard');
+////        Route::get('profile', fn() => view('client.profile'))->name('profile');
+//    });
 });
 
 

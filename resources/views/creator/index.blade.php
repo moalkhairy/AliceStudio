@@ -128,30 +128,10 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen">
+
 @include("client.partials.navbar")
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-    @include('client.partials.flashes')
-    @auth('client')
-        @if((auth('client')->user()->coins ?? 0) < 1)
-            <div class="mb-4 rounded-xl p-3 bg-yellow-500/10 border border-yellow-400/40 text-sm text-white/90 flex items-center justify-between">
-                <span>You have 0 coins. Buy a package to generate images.</span>
-                <a href="{{ route('client.packages.index') }}" class="px-3 py-1.5 rounded-lg btn-primary text-white">View
-                    Packages</a>
-            </div>
-        @endif
-    @endauth
-    @guest('client')
-        <div class="mb-4 rounded-xl p-3 glass text-sm text-white/90 flex items-center justify-between">
-            <span>Login to track your coins and purchases.</span>
-            <div class="flex gap-2">
-                <a href="{{ route('client.login') }}" class="px-3 py-1.5 rounded-lg glass hover:bg-white/10">Login</a>
-                <a href="{{ route('client.register') }}"
-                   class="px-3 py-1.5 rounded-lg btn-primary text-white">Register</a>
-            </div>
-        </div>
-    @endguest
-</div>
 
 <!-- background glows -->
 <div class="fixed inset-0 overflow-hidden pointer-events-none">
@@ -162,71 +142,12 @@
          style="animation-delay:2s;"></div>
 </div>
 
-<!-- NAVBAR -->
-<header class="sticky top-0 z-40">
-    <nav class="glass border-b border-white/10">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <a href="{{ url('/') }}" class="flex items-center gap-2">
-                <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 inline-flex items-center justify-center font-black">A</span>
-                <span class="font-semibold">Alice Studio</span>
-            </a>
-
-            <div class="flex items-center gap-2">
-                @guest
-                    @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="btn-secondary px-4 py-2 rounded-lg text-sm">Log in</a>
-                    @endif
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn-primary px-4 py-2 rounded-lg text-sm text-white">Register</a>
-                    @endif
-                @else
-                    <!-- Profile dropdown with <details> (no JS) -->
-                    @guest('client')
-                        <a href="{{ route('client.login') }}" class="btn-secondary px-4 py-2 rounded-lg text-sm">Log
-                            in</a>
-                        <a href="{{ route('client.register') }}"
-                           class="btn-primary px-4 py-2 rounded-lg text-sm text-white">Register</a>
-                    @else
-                        @php($client = auth('client')->user())
-                        <details class="relative">
-                            <summary
-                                    class="list-none flex items-center gap-3 cursor-pointer rounded-lg px-3 py-2 hover:bg-white/5">
-                                <img src="{{ $client->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($client->name).'&background=1D2A3A&color=fff' }}"
-                                     class="w-8 h-8 rounded-full border border-white/10" alt="avatar">
-                                <span class="text-sm">{{ $client->name }}</span>
-                                <svg class="w-4 h-4 opacity-70" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.204l3.71-3.973a.75.75 0 111.08 1.04l-4.24 4.54a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                                          clip-rule="evenodd"/>
-                                </svg>
-                            </summary>
-                            <div class="absolute right-0 mt-2 min-w-[12rem] glass rounded-xl p-2 border border-white/10">
-                                <a href="{{ route('client.profile') }}"
-                                   class="block px-3 py-2 rounded-lg text-sm hover:bg-white/10">Profile</a>
-                                <a href="{{ route('client.dashboard') }}"
-                                   class="block px-3 py-2 rounded-lg text-sm hover:bg-white/10">Dashboard</a>
-                                <form method="POST" action="{{ route('client.logout') }}">
-                                    @csrf
-                                    <button type="submit"
-                                            class="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-white/10 text-red-300">
-                                        Logout
-                                    </button>
-                                </form>
-                            </div>
-                        </details>
-                    @endguest
-                @endguest
-            </div>
-        </div>
-    </nav>
-</header>
-
 <main class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-3">
-            <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-            <span class="text-sm font-semibold">Guided Creator</span>
-        </div>
+        {{--        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-3">--}}
+        {{--            <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>--}}
+        {{--            <span class="text-sm font-semibold">Guided Creator</span>--}}
+        {{--        </div>--}}
         <h1 class="text-5xl font-bold gradient-text mb-2">Create Your Perfect Image</h1>
         <p class="text-gray-400">Follow the steps to build your masterpiece</p>
     </div>
